@@ -550,6 +550,7 @@ def plot_multiple_population_evolution(
         title = pop_dict.get('sub_title', None)
         xlabel = pop_dict.get('xlabel', r"Time ($\mu$s)")
         ylabel = pop_dict.get('ylabel', "Population")
+        log_scale = pop_dict.get('log_scale', False)
         xlim = pop_dict.get('xlim', None)
         ylim = pop_dict.get('ylim', None)
         grid_alpha = pop_dict.get('grid_alpha', 0.3)
@@ -566,6 +567,7 @@ def plot_multiple_population_evolution(
             title=title,
             xlabel=xlabel if xlabel is not None else "",
             ylabel=ylabel if ylabel is not None else "",
+            log_scale=log_scale,
             xlim=xlim,
             ylim=ylim,
             grid_alpha=grid_alpha,

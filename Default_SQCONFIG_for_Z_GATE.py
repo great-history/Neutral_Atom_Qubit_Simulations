@@ -59,7 +59,9 @@ state_minus = 1 / np.sqrt(2) * (state0 - state1)
 # ============================================================================
 expect_list = [
     state_plus * state_plus.dag(),
-    state_minus * state_minus.dag()
+    state_minus * state_minus.dag(),
+    stater * stater.dag(),
+    stated * stated.dag()
 ]
 
 pauli_op_list = [

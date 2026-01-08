@@ -10,13 +10,13 @@ import numpy as np
 from qutip import *
 
 # Local modules from parent directory
-from atom_basis import *
-from pulse_functions import *
-from fidelity_calculator import *
-from gates import *
-from hamiltonian_builder import *
-from plotting_helpers import *
-from utils import *
+from myPkg.atom_basis import *
+from myPkg.pulse_functions import *
+from myPkg.fidelity_calculator import *
+from myPkg.gates import *
+from myPkg.hamiltonian_builder import *
+from myPkg.plotting_helpers import *
+from myPkg.utils import *
 
 # from plotting_helpers import (
 #     plot_pulse_shapes,

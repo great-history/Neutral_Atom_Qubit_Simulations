@@ -44,8 +44,8 @@ from scipy.linalg import LinAlgWarning
 # Import custom modules
 from common_imports import *
 # from ...pulse_functions import *
-from optimization_utils import *
-from utils import *
+from myPkg.optimization_utils import *
+from myPkg.utils import *
 
 
 def optimize_for_single_B_single_init(task_idx, init_idx, scale_B, Rydberg_B, initial_params, bounds, save_dir_str,

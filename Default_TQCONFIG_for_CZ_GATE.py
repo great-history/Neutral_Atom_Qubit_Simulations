@@ -4,8 +4,7 @@ Just plain variable definitions - modify directly as needed
 """
 
 import numpy as np
-from pulse_functions import APR_pulse_Omega_r, APR_pulse_Delta_r
-from atom_basis import make_fock_basis_states
+from common_imports import *
 from qutip import Qobj
 
 # ============================================================================

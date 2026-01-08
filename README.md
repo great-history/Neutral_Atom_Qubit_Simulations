@@ -15,7 +15,7 @@ This project provides tools for:
 
 ```
 Neutral_Atom_Qubit_Simulations/
-├── Core Modules
+├── myPkg/                               # Core Package
 │   ├── atom_basis.py                    # Atomic basis state definitions (4-level system)
 │   ├── hamiltonian_builder.py           # Time-dependent Hamiltonian construction
 │   ├── pulse_functions.py               # Pulse shape functions (ARP, Gaussian, window)
@@ -23,10 +23,10 @@ Neutral_Atom_Qubit_Simulations/
 │   ├── fidelity_calculator.py           # Gate fidelity computation (mixed/arithmetic/geometric)
 │   ├── optimization_utils.py            # Optimization utilities and monitors
 │   ├── plotting_helpers.py              # Visualization functions
-│   ├── utils.py                         # General utility functions
-│   └── common_imports.py                # Common imports and configurations
+│   └── utils.py                         # General utility functions
 │
 ├── Configuration Files
+│   ├── common_imports.py                # Common imports and configurations
 │   ├── Default_SQCONFIG_for_X_GATE.py   # Single-qubit X gate default config
 │   ├── Default_SQCONFIG_for_Z_GATE.py   # Single-qubit Z gate default config
 │   └── Default_TQCONFIG_for_CZ_GATE.py  # Two-qubit CZ gate default config
@@ -38,8 +38,7 @@ Neutral_Atom_Qubit_Simulations/
 ├── Module 2: Gate Optimization & Realization
 │   ├── Exercise 1 - X Gate (Single-Qubit)
 │   │   ├── module2_X_gates_realization.ipynb      # X-gate with Gaussian pulses
-│   │   ├── module2_X_gates_optimization.ipynb     # Optimize pulse width σ
-│   │   └── module2-1_X_Gate_Realization.ipynb     # Alternative implementation
+│   │   └── module2_X_gates_optimization.ipynb     # Optimize pulse width σ
 │   │
 │   ├── Exercise 2 - Z Gate (Single-Qubit)
 │   │   ├── module2_Z_gate_realization.ipynb       # Z-gate with detuning pulses
@@ -56,26 +55,13 @@ Neutral_Atom_Qubit_Simulations/
 │
 └── Data & Resources
     ├── save_data/                       # Saved optimization data and results
+    │   ├── XGate/                       # X-gate optimization results
+    │   ├── ZGate_Optimization/          # Z-gate optimization results
+    │   ├── CZGate_ARP/                  # CZ-gate ARP optimization results
+    │   └── optimization_results/        # Other optimization data
     ├── images/                          # Figures, diagrams, and screenshots
-    ├── lecture_notes/                   # Course materials and references
-    └── myPkg/                           # Custom package modules (future)
+    └── lecture_notes/                   # Course materials and references
 ```
-
-## TODO
-
-- [ ] Refactor core modules into `myPkg` package
-  - [ ] Move `atom_basis.py` → `myPkg/`
-  - [ ] Move `hamiltonian_builder.py` → `myPkg/`
-  - [ ] Move `pulse_functions.py` → `myPkg/`
-  - [ ] Move `gates.py` → `myPkg/`
-  - [ ] Move `fidelity_calculator.py` → `myPkg/`
-  - [ ] Move `optimization_utils.py` → `myPkg/`
-  - [ ] Move `plotting_helpers.py` → `myPkg/`
-  - [ ] Move `utils.py` → `myPkg/`
-  - [ ] Move `common_imports.py` → `myPkg/`
-- [ ] Update import statements in all notebooks and scripts
-- [ ] Add `__init__.py` to `myPkg` for package initialization
-- [ ] Update documentation with new import paths
 
 ## Key Features
 

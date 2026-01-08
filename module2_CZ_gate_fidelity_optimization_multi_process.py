@@ -34,6 +34,12 @@ from joblib import Parallel, delayed
 import sys
 from multiprocessing import cpu_count
 from datetime import datetime
+import warnings
+from scipy.linalg import LinAlgWarning
+
+# # Filter out expected numerical warnings from QuTiP
+# warnings.filterwarnings('ignore', category=LinAlgWarning, 
+#                        message='.*Matrix is singular.*')
 
 # Import custom modules
 from common_imports import *
@@ -124,14 +130,19 @@ def optimize_for_single_B_single_init(task_idx, init_idx, scale_B, Rydberg_B, in
         comp_indices=comp_indices,
         expect_list=None,
         fidelity_type='mixed',
-        num_time_points=300
+        num_time_points=500,
+        use_log=False
     )
     
     # Optimization parameters
     param_names = ['T_gate', 'tau_ratio', 'amp_Omega_r', 'amp_Delta_r']
     x0 = np.array([initial_params[name] for name in param_names])
     param_bounds = [bounds[name] for name in param_names]
-    options = {'maxiter': 300, 'disp': False, 'fatol': 1e-4, 'xatol': 1e-3}
+
+    # options = {'maxiter': 300, 'disp': False, 'fatol': 1e-4, 'xatol': 1e-3}
+    # Add initial_simplex scaling to improve numerical stability
+    options = {'maxiter': 300, 'disp': False, 'fatol': 1e-4, 'xatol': 1e-3, 
+               'adaptive': True}  # Adaptive parameters for better convergence
     
     # Run optimization
     monitor = OptimizationMonitor(param_names, objective_func, verbose=False)
@@ -443,7 +454,7 @@ if __name__ == '__main__':
     
     # Parameter bounds
     bounds = {
-        'T_gate': (0.8, 1.8),
+        'T_gate': (0.15, 1.5),
         'tau_ratio': (0.175, 0.175), # Fixed tau_ratio for ARP ( why? )
         'amp_Omega_r': (5*2*np.pi, 20*2*np.pi),
         'amp_Delta_r': (10*2*np.pi, 35*2*np.pi)
@@ -452,7 +463,7 @@ if __name__ == '__main__':
     initial_params = {
         'T_gate': 0.9,
         'tau_ratio': 0.175,
-        'amp_Omega_r': 170,
+        'amp_Omega_r': 90,
         'amp_Delta_r': 150
     }
     initial_params_list = [initial_params]

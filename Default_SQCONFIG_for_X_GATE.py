@@ -5,7 +5,7 @@ Just plain variable definitions - modify directly as needed
 
 import numpy as np
 from pulse_functions import gaussian_pulse
-from atom_basis import one_atom_fock_states
+from atom_basis import make_fock_basis_states
 from qutip import sigmax
 
 # ============================================================================
@@ -19,13 +19,13 @@ time_unit = 1  # [μs]
 sigma = 1.0 * time_unit  # pulse width [μs]
 scale_t0 = 10  # multiplier for pulse center
 t0 = scale_t0 * sigma  # pulse center
-Omega01 = 1.0  # Rabi frequency [MHz]
+Omega_01 = 1.0  # Rabi frequency [MHz]
 
 # Pulse arguments dictionary
-Omega01_pulse_args = {
+Omega_01_pulse_args = {
     "sigma": sigma,
     "t0": t0,
-    "amp_Omega01": Omega01
+    "amp_Omega_01": Omega_01
 }
 
 # ============================================================================
@@ -37,13 +37,13 @@ scale_tlist = np.linspace(0, num_widths, num_widths * num_points_per_width)
 tlist = scale_tlist * sigma
 
 # Scaled Gaussian pulse shape (for plotting)
-scale_pulse_shape = gaussian_pulse(scale_tlist, sigma=1, t0=scale_t0, amp_Omega01=Omega01)
+scale_pulse_shape = gaussian_pulse(scale_tlist, sigma=1, t0=scale_t0, amp_Omega_01=Omega_01)
 
 # ============================================================================
 # Hamiltonian Parameters
 # ============================================================================
 atom0_ham_params = {
-    'Omega_01': (gaussian_pulse, Omega01_pulse_args),
+    'Omega_01': (gaussian_pulse, Omega_01_pulse_args),
     'delta_1': 0,
     'Omega_r': 0,
     'Delta_r': 0
@@ -62,7 +62,7 @@ lindblad_params = {
 # ============================================================================
 # Basis States
 # ============================================================================
-state0, state1, stater, stated = one_atom_fock_states
+state0, state1, stater, stated = make_fock_basis_states(num_qubits=1, dim_atom=4)
 
 # Expectation operators
 expect_list = [
@@ -91,10 +91,10 @@ target_gate = sigmax()
 # Common Parameter Lists for Scans
 # ============================================================================
 
-# For scanning Omega01 (with fixed sigma)
-Omega01_list = np.linspace(0, 1.75, 8).tolist()
+# For scanning Omega_01 (with fixed sigma)
+Omega_01_list = np.linspace(0, 1.75, 8).tolist()
 
-# For scanning sigma (with fixed Omega01)
+# For scanning sigma (with fixed Omega_01)
 sigma_list = np.array([0.5, 0.75, 1, 1.25, 1.5, 2, 4, 8]) * time_unit
 
 # ============================================================================

@@ -24,7 +24,8 @@ def TQ_fidelity_objective_core(
     comp_indices=None,
     expect_list=None,
     fidelity_type='mixed',
-    num_time_points=300
+    num_time_points=300,
+    use_log=False
     ):
     """
     Core objective function for TWO-QUBIT gate pulse optimization.
@@ -67,11 +68,13 @@ def TQ_fidelity_objective_core(
         Type of fidelity to compute: 'mixed' (default), 'geom' (geometric), or 'arith' (arithmetic)
     num_time_points : int
         Number of time points for simulation
+    use_log : bool, optional
+        If True, return log(1-F) for better numerical stability at high fidelities (default: False)
     
     Returns:
     --------
-    infidelity : float
-        1 - fidelity (for minimization)
+    objective_value : float
+        1 - fidelity (if use_log=False) or log(1-fidelity) (if use_log=True)
     
     Note:
     -----
@@ -185,11 +188,15 @@ def TQ_fidelity_objective_core(
         else:
             raise ValueError(f"Unknown fidelity_type: {fidelity_type}")
         
-        return 1.0 - fidelity
+        infidelity = np.abs(1.0 - fidelity)
+        if use_log:
+            return np.log(infidelity + 1e-15)  # Add epsilon to avoid log(0)
+        else:
+            return infidelity
         
     except Exception as e:
         print(f"Error in objective function: {e}")
-        return 1.0
+        return 0.0 if use_log else 1.0
 
 
 def create_TQ_pulse_optimizer(
@@ -205,7 +212,8 @@ def create_TQ_pulse_optimizer(
     comp_indices=None,
     expect_list=None,
     fidelity_type='mixed',
-    num_time_points=300
+    num_time_points=300,
+    use_log=False
 ):
     """
     Create a TWO-QUBIT gate pulse optimization objective function.
@@ -239,6 +247,8 @@ def create_TQ_pulse_optimizer(
         Type of fidelity to optimize: 'mixed' (default), 'geom', or 'arith'
     num_time_points : int
         Number of time points for simulation
+    use_log : bool, optional
+        If True, optimize log(1-F) for better stability at high fidelities (default: False)
     
     Returns:
     --------
@@ -283,7 +293,8 @@ def create_TQ_pulse_optimizer(
         comp_indices=comp_indices,
         expect_list=expect_list,
         fidelity_type=fidelity_type,  # 传递 fidelity_type 参数
-        num_time_points=num_time_points
+        num_time_points=num_time_points,
+        use_log=use_log
     )
 
 
@@ -299,7 +310,8 @@ def SQ_fidelity_objective_core(
     comp_indices=None,
     expect_list=None,
     fidelity_type='mixed',
-    num_time_points=300
+    num_time_points=300,
+    use_log=False
 ):
     """
     Core objective function for SINGLE-QUBIT gate pulse optimization.
@@ -335,11 +347,13 @@ def SQ_fidelity_objective_core(
         Type of fidelity to compute: 'mixed' (default), 'geom', or 'arith'
     num_time_points : int
         Number of time points for simulation
+    use_log : bool, optional
+        If True, return log(1-F) for better numerical stability at high fidelities (default: False)
     
     Returns:
     --------
-    infidelity : float
-        1 - fidelity (for minimization)
+    objective_value : float
+        1 - fidelity (if use_log=False) or log(1-fidelity) (if use_log=True)
     
     Note:
     -----
@@ -457,11 +471,15 @@ def SQ_fidelity_objective_core(
         else:
             raise ValueError(f"Unknown fidelity_type: {fidelity_type}")
         
-        return 1.0 - fidelity
+        infidelity = 1.0 - fidelity
+        if use_log:
+            return np.log(infidelity + 1e-15)  # Add epsilon to avoid log(0)
+        else:
+            return infidelity
         
     except Exception as e:
         print(f"Error in objective function: {e}")
-        return 1.0
+        return 0.0 if use_log else 1.0
 
 
 def create_SQ_pulse_optimizer(
@@ -475,7 +493,8 @@ def create_SQ_pulse_optimizer(
     comp_indices=None,
     expect_list=None,
     fidelity_type='mixed',
-    num_time_points=300
+    num_time_points=300,
+    use_log=False
 ):
     """
     Create a SINGLE-QUBIT gate pulse optimization objective function.
@@ -505,6 +524,8 @@ def create_SQ_pulse_optimizer(
         Type of fidelity to optimize: 'mixed' (default), 'geom', or 'arith'
     num_time_points : int
         Number of time points for simulation
+    use_log : bool, optional
+        If True, optimize log(1-F) for better stability at high fidelities (default: False)
     
     Returns:
     --------
@@ -554,7 +575,8 @@ def create_SQ_pulse_optimizer(
         comp_indices=comp_indices,
         expect_list=expect_list,
         fidelity_type=fidelity_type,
-        num_time_points=num_time_points
+        num_time_points=num_time_points,
+        use_log=use_log
     )
 
 

@@ -1,6 +1,7 @@
 from pathlib import Path
 from datetime import datetime
 import pandas as pd
+import numpy as np
 
 
 def create_save_directory(task_name, base_dir='save_data', subdir='optimization_results'):
@@ -95,3 +96,134 @@ def save_optimization_summary(summary_data, save_dir, verbose=True):
         print(df.to_string(index=False))
     
     return df
+
+
+def generate_random_initial_params(bounds, n_samples=10, min_distance=0.2, seed=None, max_attempts=1000):
+    """
+    Generate random initial parameter sets within specified bounds with minimum distance constraint.
+    
+    This function helps avoid local minima by providing multiple diverse
+    starting points for optimization. It ensures that generated parameter sets
+    are sufficiently different from each other to explore different regions
+    of the parameter space.
+    
+    Effectiveness Note:
+    -------------------
+    Multi-start optimization with this function has shown significant improvements
+    in practice. For example, in CZ gate optimization at B = 50 MHz:
+    - Single fixed initial point: F = 0.973507 (infidelity ≈ 2.6×10⁻²)
+    - Multi-start with random initial points: F = 0.999104 (infidelity ≈ 9×10⁻⁴)
+    This represents a ~30× reduction in infidelity, demonstrating the effectiveness
+    of exploring multiple starting points to escape local minima.
+    
+    Parameters
+    ----------
+    bounds : dict
+        Dictionary of parameter bounds. Each key is a parameter name,
+        and each value is a tuple (min, max).
+        Example: {'T_gate': (0.25, 2.5), 'tau_ratio': (0.05, 0.75)}
+    n_samples : int, optional
+        Number of random initial parameter sets to generate.
+        Default: 10
+    min_distance : float, optional
+        Minimum normalized Euclidean distance between any two parameter sets.
+        Distance is computed in normalized space [0, 1] for each parameter.
+        Typical values: 0.1 (closer), 0.2 (moderate), 0.3 (well-separated).
+        Default: 0.2
+    seed : int, optional
+        Random seed for reproducibility. If None, results will be random.
+        Default: None
+    max_attempts : int, optional
+        Maximum number of attempts to generate a valid parameter set
+        that satisfies the distance constraint before giving up.
+        Default: 1000
+    
+    Returns
+    -------
+    initial_params_list : list of dict
+        List of randomly generated initial parameter dictionaries.
+        Each dictionary has the same keys as the bounds input.
+    
+    Raises
+    ------
+    ValueError
+        If unable to generate enough diverse parameter sets within max_attempts.
+    
+    Examples
+    --------
+    >>> bounds = {
+    ...     'T_gate': (0.25, 2.5),
+    ...     'tau_ratio': (0.05, 0.75),
+    ...     'amp_Omega_r': (5*2*np.pi, 20*2*np.pi),
+    ...     'amp_Delta_r': (10*2*np.pi, 30*2*np.pi)
+    ... }
+    >>> # Generate 5 well-separated parameter sets
+    >>> initial_params_list = generate_random_initial_params(bounds, n_samples=5, min_distance=0.3)
+    >>> len(initial_params_list)
+    5
+    """
+    if seed is not None:
+        np.random.seed(seed)
+    
+    initial_params_list = []
+    param_names = list(bounds.keys())
+    n_params = len(param_names)
+    
+    # Precompute parameter ranges for normalization
+    param_ranges = {name: bounds[name][1] - bounds[name][0] for name in param_names}
+    
+    def normalize_params(params):
+        """Normalize parameters to [0, 1] range for distance calculation."""
+        normalized = np.zeros(n_params)
+        for i, name in enumerate(param_names):
+            min_val, max_val = bounds[name]
+            # Handle fixed parameters (where param_range is 0)
+            if param_ranges[name] == 0:
+                normalized[i] = 0  # Fixed parameter doesn't contribute to distance
+            else:
+                normalized[i] = (params[name] - min_val) / param_ranges[name]
+        return normalized
+    
+    def compute_min_distance(new_params_normalized, existing_params_normalized_list):
+        """Compute minimum distance to existing parameter sets."""
+        if not existing_params_normalized_list:
+            return np.inf
+        distances = [np.linalg.norm(new_params_normalized - existing) 
+                     for existing in existing_params_normalized_list]
+        return np.min(distances)
+    
+    # Store normalized versions for efficient distance computation
+    normalized_params_list = []
+    
+    for i in range(n_samples):
+        attempts = 0
+        valid_params_found = False
+        
+        while attempts < max_attempts and not valid_params_found:
+            # Generate random parameters
+            params = {}
+            for name in param_names:
+                min_val, max_val = bounds[name]
+                params[name] = np.random.uniform(min_val, max_val)
+            
+            # Normalize for distance calculation
+            params_normalized = normalize_params(params)
+            
+            # Check distance constraint
+            min_dist = compute_min_distance(params_normalized, normalized_params_list)
+            
+            if min_dist >= min_distance:
+                initial_params_list.append(params)
+                normalized_params_list.append(params_normalized)
+                valid_params_found = True
+            
+            attempts += 1
+        
+        if not valid_params_found:
+            raise ValueError(
+                f"Unable to generate parameter set {i+1}/{n_samples} with "
+                f"min_distance={min_distance} after {max_attempts} attempts. "
+                f"Try reducing min_distance or increasing max_attempts."
+            )
+    
+    return initial_params_list

@@ -39,18 +39,23 @@ from datetime import datetime
 from common_imports import *
 # from ...pulse_functions import *
 from optimization_utils import *
+from utils import *
 
 
-def optimize_for_single_B(idx, scale_B, Rydberg_B, initial_params, bounds, save_dir_str,
-                          atom0_ham_params, atom1_ham_params, lindblad_params,
-                          target_gate, qs0_list, psi0_list, comp_indices, total_count):
+def optimize_for_single_B_single_init(task_idx, init_idx, scale_B, Rydberg_B, initial_params, bounds, save_dir_str,
+                                      atom0_ham_params, atom1_ham_params, lindblad_params,
+                                      target_gate, qs0_list, psi0_list, comp_indices, total_tasks):
     """
-    Optimize gate fidelity for a single Rydberg blockade strength.
+    Optimize gate fidelity for a single Rydberg blockade strength with a single initial parameter set.
     
     Parameters
     ----------
-    idx : int
-        Index in the B value list
+    task_idx : int
+        Global task index (from 0 to total_tasks-1)
+    init_idx : int
+        Index of the initial parameter set (for multi-start optimization)
+    scale_B : float
+        Rydberg blockade strength [MHz] (for display)
     Rydberg_B : float
         Rydberg blockade strength [MHz * 2π]
     initial_params : dict
@@ -73,8 +78,8 @@ def optimize_for_single_B(idx, scale_B, Rydberg_B, initial_params, bounds, save_
         Initial states for fidelity calculation (full space)
     comp_indices : list
         Indices of computational basis states
-    total_count : int
-        Total number of B values to optimize
+    total_tasks : int
+        Total number of optimization tasks (n_B_values × n_init_sets)
         
     Returns
     -------
@@ -84,17 +89,24 @@ def optimize_for_single_B(idx, scale_B, Rydberg_B, initial_params, bounds, save_
     # Convert string path back to Path object (important for Windows multiprocessing)
     save_dir = Path(save_dir_str)
     
+    # Create subdirectory for this B value
+    B_dir = save_dir / f'B{int(scale_B)}MHz'
+    B_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Save path for this specific initial parameter set
+    save_path = B_dir / f'monitor_init{init_idx}.pkl'
+    
     # Check if results already exist (optional: enable caching)
-    save_path = save_dir / f'monitor_B{int(scale_B)}MHz.pkl'
     # Uncomment to enable caching:
     # if save_path.exists():
-    #     print(f"📂 [{idx+1}/{total_count}] Loading existing B = {scale_B:.0f} MHz")
+    #     print(f"📂 [{task_idx+1}/{total_tasks}] Loading existing B = {scale_B:.0f} MHz (init {init_idx})")
     #     monitor = OptimizationMonitor.load(save_path)
     #     result = monitor.get_best_result()
     #     result['Rydberg_B_MHz'] = scale_B
+    #     result['init_idx'] = init_idx
     #     return result
     
-    print(f"🚀 [{idx+1}/{total_count}] Starting B = {scale_B:.0f} MHz (PID: {os.getpid()})")
+    print(f"🚀 [{task_idx+1}/{total_tasks}] Starting B = {scale_B:.0f} MHz, init={init_idx} (PID: {os.getpid()})")
     start_time = time.time()
     
     # Create objective function
@@ -119,31 +131,31 @@ def optimize_for_single_B(idx, scale_B, Rydberg_B, initial_params, bounds, save_
     param_names = ['T_gate', 'tau_ratio', 'amp_Omega_r', 'amp_Delta_r']
     x0 = np.array([initial_params[name] for name in param_names])
     param_bounds = [bounds[name] for name in param_names]
-    options = {'maxiter': 300, 'disp': False, 'fatol': 1e-6, 'xatol': 1e-4}
+    options = {'maxiter': 300, 'disp': False, 'fatol': 1e-4, 'xatol': 1e-3}
     
     # Run optimization
     monitor = OptimizationMonitor(param_names, objective_func, verbose=False)
     try:
         result = minimize(objective_func, x0, method='Nelder-Mead',
-                         bounds=param_bounds, options=options, callback=monitor)
+                          bounds=param_bounds, options=options, callback=monitor)
     except Exception as e:
-        print(f"❌ [{idx+1}/{total_count}] Error for B = {scale_B:.0f} MHz: {str(e)}")
+        print(f"❌ [{task_idx+1}/{total_tasks}] Error for B = {scale_B:.0f} MHz, init={init_idx}: {str(e)}")
         return None
     
     # Get best result
     best = monitor.get_best_result()
     best['Rydberg_B_MHz'] = scale_B
+    best['init_idx'] = init_idx
     
     # Save results
     try:
-        # Ensure directory exists (important for multiprocessing on Windows)
-        save_dir.mkdir(parents=True, exist_ok=True)
+        # Save this specific optimization run
         monitor.save(save_path)
     except Exception as e:
-        print(f"⚠️  [{idx+1}/{total_count}] Failed to save monitor: {str(e)}")
+        print(f"⚠️  [{task_idx+1}/{total_tasks}] Failed to save monitor for init {init_idx}: {str(e)}")
     
     elapsed = time.time() - start_time
-    print(f"✅ [{idx+1}/{total_count}] Completed B = {scale_B:.0f} MHz, "
+    print(f"✅ [{task_idx+1}/{total_tasks}] Completed B = {scale_B:.0f} MHz, init={init_idx}, "
           f"F = {best['fidelity']:.6f}, Time = {elapsed:.1f}s")
     
     return best
@@ -203,52 +215,52 @@ def setup_parameters():
             target_gate, qs0_list, psi0_list, comp_indices)
 
 
-def main(task_name='CZ_gate_optimization_multi_process'):
+def main(scale_B_list, initial_params, bounds, task_name='CZ_gate_optimization_multi_process'):
     """
     Main function to run parallel optimization.
     
     Parameters
     ----------
-    task_name : str
+    scale_B_list : list
+        List of Rydberg blockade strengths to optimize [MHz].
+        Example: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+    initial_params : dict or list of dict
+        Initial optimization parameters. Can be either:
+        - A single dict with keys: 'T_gate', 'tau_ratio', 'amp_Omega_r', 'amp_Delta_r'
+        - A list of dicts, where each dict has the same keys.
+        When a list is provided, optimization will be performed with each initial
+        parameter set, and the best result (highest fidelity) will be selected.
+        This helps avoid local minima by exploring different starting points.
+    bounds : dict
+        Parameter bounds for optimization, same keys as initial_params.
+        Values are tuples (min, max).
+    task_name : str, optional
         Name of the optimization task. Used to create a unique results folder.
         Default: 'CZ_gate_optimization_multi_process'
     
     Returns
     -------
     results : list
-        List of optimization results for each B value
+        List of optimization results for each B value. Each result is the best
+        among all initial parameter sets tried.
     """
     
     # ========== Configuration ==========
-    # Rydberg blockade strengths to optimize
-    # scale_B_list = [400, 500, 600, 700, 800, 900, 1000, 1250, 1500, 1750, 2000, 2500, 3000]  # [MHz]
-    # For full scan, use:
-    # scale_B_list = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 
-    #                 1250, 1500, 1750, 2000, 2500, 3000]
-    scale_B_list = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
-    
     Rydberg_B_list = [scale_B * 2 * np.pi for scale_B in scale_B_list]
     
-    # Initial parameters for optimization
-    initial_params = {
-        'T_gate': 0.4548,
-        'tau_ratio': 0.1576,
-        'amp_Omega_r': 62.83341,
-        'amp_Delta_r': 110.7900
-    }
-    
-    # Parameter bounds
-    bounds = {
-        'T_gate': (0.25, 2.5),
-        'tau_ratio': (0.05, 0.75),
-        'amp_Omega_r': (5*2*np.pi, 20*2*np.pi),
-        'amp_Delta_r': (10*2*np.pi, 30*2*np.pi)
-    }
+    # Convert initial_params to list format if it's a single dict
+    if isinstance(initial_params, dict):
+        initial_params_list = [initial_params]
+        n_init_sets = 1
+    else:
+        initial_params_list = initial_params
+        n_init_sets = len(initial_params_list)
     
     # ========== Optimized Parallel Configuration ==========
     # Dynamically determine optimal number of parallel jobs
     n_cores = cpu_count()
-    n_tasks = len(Rydberg_B_list)
+    n_B_values = len(Rydberg_B_list)
+    n_tasks = n_B_values * n_init_sets  # Total number of optimization tasks
     
     # Intelligent n_jobs setting:
     # - If tasks < cores: use number of tasks (no wasted processes)
@@ -266,7 +278,7 @@ def main(task_name='CZ_gate_optimization_multi_process'):
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     folder_name = f"{timestamp}_{task_name}"
     # Use absolute path to avoid working directory issues in multiprocessing
-    save_dir = Path(__file__).parent / 'optimization_results' / folder_name
+    save_dir = Path(__file__).parent / 'save_data' / folder_name
     save_dir.mkdir(parents=True, exist_ok=True)
     
     # Ensure directory is fully created (important for Windows multiprocessing)
@@ -285,46 +297,98 @@ def main(task_name='CZ_gate_optimization_multi_process'):
     print(f"{'='*70}")
     print(f"  Task name: {task_name}")
     print(f"  CPU cores available: {n_cores}")
-    print(f"  Total B values: {n_tasks}")
+    print(f"  Total B values: {n_B_values}")
     print(f"  B range: {scale_B_list[0]:.0f} - {scale_B_list[-1]:.0f} MHz")
+    print(f"  Initial parameter sets: {n_init_sets}")
+    print(f"  Total optimizations: {n_tasks}")
     print(f"  Parallel jobs: {n_jobs} (optimized)")
     print(f"  Pre-dispatch: {pre_dispatch}")
     print(f"  Backend: loky (optimized for Windows)")
-    print(f"  Max iterations per B: 300")
+    print(f"  Max iterations per optimization: 300")
     print(f"{'='*70}\n")
     
     total_start = time.time()
     
+    # Create all optimization tasks (B value × initial params combinations) with global task index
+    optimization_tasks = []
+    task_idx = 0
+    for idx, (scale_B, B) in enumerate(zip(scale_B_list, Rydberg_B_list)):
+        for init_idx, init_params in enumerate(initial_params_list):
+            optimization_tasks.append((task_idx, init_idx, scale_B, B, init_params))
+            task_idx += 1
+    
     # Run parallel optimization using joblib
     # verbose=10 shows progress bar, pre_dispatch controls task distribution
-    results = Parallel(
+    all_results = Parallel(
         n_jobs=n_jobs,
         backend='loky',
         verbose=10,
         pre_dispatch=pre_dispatch,
         timeout=None  # No timeout for long optimization tasks
     )(
-        delayed(optimize_for_single_B)(
-            idx, scale_B, B, initial_params, bounds, str(save_dir),
+        delayed(optimize_for_single_B_single_init)(
+            task_idx, init_idx, scale_B, B, init_params, bounds, str(save_dir),
             atom0_ham_params, atom1_ham_params, lindblad_params,
             target_gate, qs0_list, psi0_list, comp_indices, n_tasks
         )
-        for idx, (scale_B, B) in enumerate(zip(scale_B_list, Rydberg_B_list))
+        for task_idx, init_idx, scale_B, B, init_params in optimization_tasks
     )
     
     total_time = time.time() - total_start
     
     # Filter out None results (failed optimizations)
-    results = [r for r in results if r is not None]
+    all_results = [r for r in all_results if r is not None]
+    
+    # Group results by B value and select the best one for each B
+    results_by_B = {}
+    for result in all_results:
+        B_val = result['Rydberg_B_MHz']
+        if B_val not in results_by_B:
+            results_by_B[B_val] = []
+        results_by_B[B_val].append(result)
+    
+    # Select best result (highest fidelity) for each B value
+    results = []
+    for B_val in sorted(results_by_B.keys()):
+        B_results = results_by_B[B_val]
+        best_result = max(B_results, key=lambda r: r['fidelity'])
+        # Add info about how many attempts were made
+        best_result['n_attempts'] = len(B_results)
+        results.append(best_result)
+        
+        # Save a copy of the best monitor for easy access (backward compatibility)
+        if n_init_sets > 1:
+            try:
+                B_dir = save_dir / f'B{int(B_val)}MHz'
+                best_init_idx = best_result['init_idx']
+                source_path = B_dir / f'monitor_init{best_init_idx}.pkl'
+                best_path = B_dir / 'monitor_best.pkl'
+                
+                if source_path.exists():
+                    # Load and save as best
+                    import shutil
+                    shutil.copy(source_path, best_path)
+            except Exception as e:
+                print(f"⚠️  Failed to save best monitor for B={B_val}: {str(e)}")
+    
+    if n_init_sets > 1:
+        print(f"\n{'='*70}")
+        print(f"📊 Multi-Start Optimization Summary:")
+        print(f"{'='*70}")
+        for result in results:
+            print(f"  B = {result['Rydberg_B_MHz']:.0f} MHz: "
+                  f"Best F = {result['fidelity']:.6f} from {result['n_attempts']} attempts")
+        print(f"{'='*70}\n")
     
     # ========== Print Summary ==========
     print(f"\n{'='*70}")
     print(f"✅ Parallel Optimization Complete!")
     print(f"{'='*70}")
     print(f"  Total time: {total_time/60:.2f} minutes")
-    print(f"  Average per B: {total_time/n_tasks:.1f} seconds")
-    print(f"  Successful: {len(results)}/{n_tasks}")
-    print(f"  Efficiency: {len(results)/n_tasks*100:.1f}%")
+    print(f"  Total optimizations run: {len(all_results)}/{n_tasks}")
+    print(f"  Average per optimization: {total_time/len(all_results):.1f} seconds")
+    print(f"  Successful B values: {len(results)}/{n_B_values}")
+    print(f"  Success rate: {len(results)/n_B_values*100:.1f}%")
     print(f"  Theoretical speedup: ~{n_jobs}x")
     print(f"{'='*70}\n")
     
@@ -369,8 +433,36 @@ if __name__ == '__main__':
     # task_name = 'CZ_gate_high_B_range'
     # task_name = 'CZ_gate_fine_sweep'
     
+    # ========== Optimization Parameters ==========
+    # Rydberg blockade strengths to optimize [MHz]
+    # For full scan, use:
+    # scale_B_list = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 
+    #                 1250, 1500, 1750, 2000, 2500, 3000]
+    scale_B_list = [500, 600, 700, 800, 900, 1000, 1250, 1500, 1750, 2000, 2500, 3000]
+    # scale_B_list = [100]
+    
+    # Parameter bounds
+    bounds = {
+        'T_gate': (0.8, 1.8),
+        'tau_ratio': (0.175, 0.175), # Fixed tau_ratio for ARP ( why? )
+        'amp_Omega_r': (5*2*np.pi, 20*2*np.pi),
+        'amp_Delta_r': (10*2*np.pi, 35*2*np.pi)
+    }
+
+    initial_params = {
+        'T_gate': 0.9,
+        'tau_ratio': 0.175,
+        'amp_Omega_r': 170,
+        'amp_Delta_r': 150
+    }
+    initial_params_list = [initial_params]
+
+    # Generate several well-separated initial parameter sets
+    # initial_params_list = generate_random_initial_params(bounds, n_samples=15, min_distance=0.3)
+    # print(initial_params_list)
+    
     try:
-        results = main(task_name=task_name)
+        results = main(scale_B_list, initial_params_list, bounds, task_name=task_name)
     except KeyboardInterrupt:
         print("\n⚠️  Optimization interrupted by user!")
         print("   Partial results may have been saved to optimization_results/")

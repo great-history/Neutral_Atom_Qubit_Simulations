@@ -1,12 +1,12 @@
 # Neutral Atom Qubits Simulations
 
-Some python codes  for simulating and optimizing quantum gates in neutral atom qubit systems using Rydberg interactions.
+Python codes for simulating and optimizing quantum gates in neutral atom qubit systems using Rydberg interactions.
 
 ## Overview
 
 This project provides tools for:
-- **Single-qubit gates**: X, Y, Z gates with Gaussian and window pulses
-- **Two-qubit gates**: CZ gate with Adiabatic Rapid Passage (ARP) and time-optimal pulses
+- **Single-qubit gates**: X-gate and Z-gate with Gaussian and window pulses
+- **Two-qubit gates**: CZ gate with Adiabatic Rapid Passage (ARP) protocol
 - **Gate fidelity optimization**: Multi-parameter optimization with parallel processing
 - **Pulse engineering**: Custom pulse shapes for high-fidelity quantum operations
 - **Visualization**: Comprehensive plotting utilities for pulse shapes, population dynamics, and optimization convergence
@@ -14,13 +14,13 @@ This project provides tools for:
 ## Project Structure
 
 ```
-simulation_codes/
+Neutral_Atom_Qubit_Simulations/
 ├── Core Modules
-│   ├── atom_basis.py                    # Atomic basis state definitions
+│   ├── atom_basis.py                    # Atomic basis state definitions (4-level system)
 │   ├── hamiltonian_builder.py           # Time-dependent Hamiltonian construction
-│   ├── pulse_functions.py               # Pulse shape functions (ARP, Gaussian, etc.)
-│   ├── gates.py                         # Quantum gate definitions
-│   ├── fidelity_calculator.py           # Gate fidelity computation
+│   ├── pulse_functions.py               # Pulse shape functions (ARP, Gaussian, window)
+│   ├── gates.py                         # Quantum gate definitions (X, Z, CZ)
+│   ├── fidelity_calculator.py           # Gate fidelity computation (mixed/arithmetic/geometric)
 │   ├── optimization_utils.py            # Optimization utilities and monitors
 │   ├── plotting_helpers.py              # Visualization functions
 │   ├── utils.py                         # General utility functions
@@ -36,27 +36,29 @@ simulation_codes/
 │   └── module1_two_atom_coupling.ipynb
 │
 ├── Module 2: Gate Optimization & Realization
-│   ├── Single-Qubit Gates
-│   │   ├── module2_X_gates_optimization.ipynb
-│   │   ├── module2_X_gates_realization.ipynb
-│   │   ├── module2-1_X_Gate_Realization.ipynb
-│   │   ├── module2_Z_gate_optimization.ipynb
-│   │   └── module2_Z_gate_realization.ipynb
+│   ├── Exercise 1 - X Gate (Single-Qubit)
+│   │   ├── module2_X_gates_realization.ipynb      # X-gate with Gaussian pulses
+│   │   ├── module2_X_gates_optimization.ipynb     # Optimize pulse width σ
+│   │   └── module2-1_X_Gate_Realization.ipynb     # Alternative implementation
 │   │
-│   └── Two-Qubit CZ Gate
-│       ├── module2_CZ_gate_ARP_optimization.ipynb
-│       ├── module2_CZ_gate_ARP_realization.ipynb
+│   ├── Exercise 2 - Z Gate (Single-Qubit)
+│   │   ├── module2_Z_gate_realization.ipynb       # Z-gate with detuning pulses
+│   │   └── module2_Z_gate_optimization.ipynb      # Optimize gate time and detuning
+│   │
+│   └── Exercise 3 - CZ Gate (Two-Qubit)
+│       ├── module2_CZ_gate_ARP_realization.ipynb  # CZ gate with ARP protocol
+│       ├── module2_CZ_gate_ARP_optimization.ipynb # Parameter optimization
 │       ├── module2_CZ_gate_fidelity_optimization_multi_process.py
 │       ├── module2_CZ_gate_fidelity_optimization_multi_process_plotting.ipynb
 │       ├── module2_CZ_gate_realization_time_optimal_pulse.ipynb
 │       ├── module2_test_gate_fidelity.ipynb
 │       └── module2_test_gate_optimization.ipynb
 │
-└── Data Directories
-    ├── optimization_results/            # Optimization results from multi-process runs
-    ├── save_data/                       # Saved optimization data
-    ├── images/                          # Figures and diagrams
-    └── myPkg/                           # Custom package modules
+└── Data & Resources
+    ├── save_data/                       # Saved optimization data and results
+    ├── images/                          # Figures, diagrams, and screenshots
+    ├── lecture_notes/                   # Course materials and references
+    └── myPkg/                           # Custom package modules (future)
 ```
 
 ## TODO
@@ -123,60 +125,72 @@ pip install qutip numpy scipy pandas matplotlib joblib
 cd simulation_codes
 ```
 
-## Physical System
-
-### Atomic Level Structure
-```
-|d⟩ (decay state)
-|r⟩ (Rydberg state) ← Ω_r(t), Δ_r(t)
-|1⟩ (excited state) ← Ω_01, δ_1
-|0⟩ (ground state)
-```
-
-### Key Parameters
-- **Rabi frequencies**: Ω_r (ground to Rydberg), Ω_01 (ground to excited)
-- **Detunings**: Δ_r (Rydberg detuning), δ_1 (excited state detuning)
-- **Rydberg blockade**: B (MHz) - interaction strength between Rydberg atoms
-- **Lindblad parameters**: γ_r (decay rate), b_0r, b_1r, b_dr (branching ratios)
-
 ### Units Convention
 - **Time**: microseconds (μs)
 - **Frequency**: MHz for display, rad/μs (angular frequency) for computation
-- **Conversion**: f (MHz) = ω (rad/μs) / (2π)
+- **Conversion**: $f$ (MHz) = $\omega$ (rad/μs) / (2π)
 
 ## Module Descriptions
 
 ### Module 1: Fundamentals
-- **Single atom dynamics**: Basic Hamiltonian evolution and population dynamics
-- **Two-atom coupling**: Rydberg blockade interactions and entanglement
+- **Single atom dynamics**: Four-level system Hamiltonian evolution and population dynamics
+- **Two-atom coupling**: Rydberg blockade interactions and entanglement generation
 
-### Module 2: Gate Implementation
-- **X gates**: π-rotation around X-axis using Gaussian pulses
-- **Z gates**: Phase gates using detuning window pulses
-- **CZ gate**: Controlled-Z gate with ARP or time-optimal pulses
+### Module 2: Quantum Gate Implementation
 
-## Optimization Workflow
+#### Exercise 1: X-Gate (Single-Qubit π Rotation)
+**Implementation Method:**
+- Gaussian pulse: $\Omega_{01}(t) = \Omega_0 \exp[-(t-t_0)^2/(2\sigma^2)]$
+- Direct drive on computational basis $|0\rangle \leftrightarrow |1\rangle$
+- Set $\Omega_r = 0, \Delta_r = 0$ (no Rydberg coupling)
 
-1. **Define target gate**: Unitary matrix for desired quantum operation
-2. **Set initial parameters**: Starting guess for pulse parameters
-3. **Configure bounds**: Physical constraints on optimization variables
-4. **Run optimization**: Use `scipy.optimize.minimize` with monitoring
-5. **Analyze results**: Plot convergence, parameter evolution, and final fidelity
-6. **Verify gate**: Test optimized parameters in quantum simulation
+**Key Tasks:**
+1. Scan Rabi frequency $\Omega_0$ and pulse width $\sigma$
+2. Optimize $\sigma$ for fixed $\Omega_0$ to achieve π-pulse
+3. Verify analytic formula: $\sigma \cdot \Omega_0 = \sqrt{\pi/2}$
+4. Visualize Bloch sphere evolution
 
-## Performance Tips
+**Expected Results:**
+- Minimal leakage to $|r\rangle$ and $|d\rangle$ states ($< 10^{-12}$)
+- High fidelity ($> 0.999$) with optimized parameters
+- Clean population transfer $|0\rangle \leftrightarrow |1\rangle$
 
-### For Multi-Process Optimization
-- Adjust `n_jobs` based on CPU cores available
-- Use `pre_dispatch` to control memory usage
-- Enable result caching to skip completed optimizations
-- Monitor disk space for saving large datasets
+#### Exercise 2: Z-Gate (Single-Qubit Phase Gate)
+**Implementation Method:**
+- Window (square) pulse on detuning: $\delta_1(t)$ during $0 < t < T$
+- Pure phase accumulation, no population transfer
+- Set $\Omega_{01} = 0, \Omega_r = 0, \Delta_r = 0$
 
-### For Single Optimization
-- Start with coarse parameter sweeps
-- Use `verbose=True` in monitor for real-time feedback
-- Save monitors periodically for long runs
-- Adjust `maxiter` and tolerances based on convergence
+**Key Tasks:**
+1. Scan detuning amplitude $\delta_1$ and gate time $T$
+2. Optimize to achieve phase $\phi = \int_0^T \delta_1(t) dt = \pi$
+3. Plot fidelity vs parameters
+4. Visualize state trajectory on Bloch sphere (rotation around Z-axis)
+
+**Expected Results:**
+- No leakage to auxiliary states
+- Constraint: $\delta_1 \times T = \pi$ for optimal Z-gate
+- Near-perfect fidelity ($F \approx 1$) at optimal parameters
+
+#### Exercise 3: CZ-Gate (Two-Qubit Controlled Phase)
+**Implementation Method:**
+- Adiabatic Rapid Passage (ARP) protocol (Ref. [2])
+- Time-dependent Rabi drive: $\Omega_{1r}(t) = \Omega_{1r}[e^{-(t-t_0)^4/\tau^4} - a]/(1-a)$
+- Time-dependent detuning: $\Delta_r(t) = -\Delta_r \cos(2\pi t/T)$
+- Rydberg blockade strength: $B/2\pi = 50-3000$ MHz
+
+**Key Tasks:**
+1. Reproduce Ref. [2] Fig. 2 with initial parameters
+2. Analyze population dynamics for $|1,0\rangle$ and $|1,1\rangle$ initial states
+3. Scan Rydberg lifetime $\gamma_r$ and measure fidelity dependence
+4. Optimize parameters for various blockade strengths $B$
+5. Compare three parameter sets (slow/reference/fast gates)
+
+**Key Observations:**
+- **Significant Rydberg population**: Unlike X/Z gates, CZ requires transient $|r\rangle$ population ($\sim 10^{-4}$)
+- **Leakage to decay state**: $|d\rangle$ population $\sim 10^{-3}$ due to spontaneous emission
+- **Lifetime sensitivity**: Fidelity strongly depends on $\gamma_r$ (saturates below $1/540$ μs⁻¹)
+- **Blockade scaling**: Requires $B \gtrsim 200$ MHz for near-optimal fidelity
 
 ## Contact
 
@@ -191,5 +205,5 @@ This project uses:
 - **Matplotlib**: Visualization
 
 ## References
-1. Lecture Notes of Ph709 Quantum Computing Laboratory : Software Lab
+1. Lecture Notes of Ph709 Quantum Computing Laboratory: Software Lab
 2. Saffman, M., et al. "Symmetric Rydberg controlled-Z gates with adiabatic pulses." Physical Review A 101.6 (2020): 062309.

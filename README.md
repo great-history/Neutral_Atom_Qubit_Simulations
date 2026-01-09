@@ -2,15 +2,6 @@
 
 Python codes for simulating and optimizing quantum gates in neutral atom qubit systems using Rydberg interactions.
 
-## Overview
-
-This project provides tools for:
-- **Single-qubit gates**: X-gate and Z-gate with Gaussian and window pulses
-- **Two-qubit gates**: CZ gate with Adiabatic Rapid Passage (ARP) protocol
-- **Gate fidelity optimization**: Multi-parameter optimization with parallel processing
-- **Pulse engineering**: Custom pulse shapes for high-fidelity quantum operations
-- **Visualization**: Comprehensive plotting utilities for pulse shapes, population dynamics, and optimization convergence
-
 ## Project Structure
 
 ```
@@ -63,21 +54,6 @@ Neutral_Atom_Qubit_Simulations/
 ├── images/                              # Figures, diagrams, and plots
 └── lecture_notes/                       # Course materials and references
 ```
-
-### Organization Philosophy
-
-**Modular by Exercise Type:**
-- Each gate type (X, Z, CZ) has its own self-contained folder
-- Each folder includes:
-  - Configuration files (`Default_*CONFIG_*.py`)
-  - Implementation notebooks (realization + optimization)
-  - Local `save_data/` directory for results
-  
-**Benefits:**
-- **Easy navigation**: All files for a specific gate are together
-- **Self-contained**: Each module can be moved or shared independently
-- **Clear structure**: Beginners can easily understand the project layout
-- **Path management**: Local save directories avoid cross-module dependencies
 
 ## Key Features
 

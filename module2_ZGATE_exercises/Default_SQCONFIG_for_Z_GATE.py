@@ -2,7 +2,19 @@
 Simple configuration file for single atom qubit simulations
 Just plain variable definitions - modify directly as needed
 """
+import sys
+from pathlib import Path
 
+# Add parent directory to path so we can import myPkg
+try:
+    parent_dir = Path(__file__).resolve().parent.parent
+except NameError:
+    # When __file__ is not available (e.g., in interactive mode)
+    parent_dir = Path.cwd()
+    
+if str(parent_dir) not in sys.path:
+    sys.path.insert(0, str(parent_dir))
+    
 import numpy as np
 from common_imports import *
 from qutip import sigmaz

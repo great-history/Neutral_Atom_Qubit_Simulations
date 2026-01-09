@@ -41,6 +41,18 @@ from scipy.linalg import LinAlgWarning
 # warnings.filterwarnings('ignore', category=LinAlgWarning, 
 #                        message='.*Matrix is singular.*')
 
+import sys
+from pathlib import Path
+
+# Add parent directory to path so we can import myPkg
+try:
+    parent_dir = Path(__file__).resolve().parent.parent
+except NameError:
+    # When __file__ is not available (e.g., in interactive mode)
+    parent_dir = Path.cwd()
+    
+if str(parent_dir) not in sys.path:
+    sys.path.insert(0, str(parent_dir))
 # Import custom modules
 from common_imports import *
 # from ...pulse_functions import *
@@ -449,7 +461,7 @@ if __name__ == '__main__':
     # For full scan, use:
     # scale_B_list = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 
     #                 1250, 1500, 1750, 2000, 2500, 3000]
-    scale_B_list = [500, 600, 700, 800, 900, 1000, 1250, 1500, 1750, 2000, 2500, 3000]
+    scale_B_list = [1000, 1250, 1500, 1750, 2000, 2500, 3000]
     # scale_B_list = [100]
     
     # Parameter bounds

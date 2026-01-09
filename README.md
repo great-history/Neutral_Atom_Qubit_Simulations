@@ -15,7 +15,7 @@ This project provides tools for:
 
 ```
 Neutral_Atom_Qubit_Simulations/
-├── myPkg/                               # Core Package
+├── myPkg/                               # Core Package (Utility Modules)
 │   ├── atom_basis.py                    # Atomic basis state definitions (4-level system)
 │   ├── hamiltonian_builder.py           # Time-dependent Hamiltonian construction
 │   ├── pulse_functions.py               # Pulse shape functions (ARP, Gaussian, window)
@@ -25,43 +25,59 @@ Neutral_Atom_Qubit_Simulations/
 │   ├── plotting_helpers.py              # Visualization functions
 │   └── utils.py                         # General utility functions
 │
-├── Configuration Files
-│   ├── common_imports.py                # Common imports and configurations
-│   ├── Default_SQCONFIG_for_X_GATE.py   # Single-qubit X gate default config
-│   ├── Default_SQCONFIG_for_Z_GATE.py   # Single-qubit Z gate default config
-│   └── Default_TQCONFIG_for_CZ_GATE.py  # Two-qubit CZ gate default config
+├── common_imports.py                    # Shared imports and configurations for all modules
 │
-├── Module 1: Single & Two-Atom Dynamics
-│   ├── module1_single_atom_dynamics.ipynb
-│   └── module1_two_atom_coupling.ipynb
+├── module1_atom_exercises/              # Module 1: Atomic System Fundamentals
+│   ├── module1_single_atom_dynamics.ipynb  # Four-level atom Hamiltonian evolution
+│   └── module1_two_atom_coupling.ipynb     # Rydberg blockade and two-atom interactions
 │
-├── Module 2: Gate Optimization & Realization
-│   ├── Exercise 1 - X Gate (Single-Qubit)
-│   │   ├── module2_X_gates_realization.ipynb      # X-gate with Gaussian pulses
-│   │   └── module2_X_gates_optimization.ipynb     # Optimize pulse width σ
-│   │
-│   ├── Exercise 2 - Z Gate (Single-Qubit)
-│   │   ├── module2_Z_gate_realization.ipynb       # Z-gate with detuning pulses
-│   │   └── module2_Z_gate_optimization.ipynb      # Optimize gate time and detuning
-│   │
-│   └── Exercise 3 - CZ Gate (Two-Qubit)
-│       ├── module2_CZ_gate_ARP_realization.ipynb  # CZ gate with ARP protocol
-│       ├── module2_CZ_gate_ARP_optimization.ipynb # Parameter optimization
-│       ├── module2_CZ_gate_fidelity_optimization_multi_process.py
-│       ├── module2_CZ_gate_fidelity_optimization_multi_process_plotting.ipynb
-│       ├── module2_CZ_gate_realization_time_optimal_pulse.ipynb
-│       ├── module2_test_gate_fidelity.ipynb
-│       └── module2_test_gate_optimization.ipynb
+├── module2_fidelity_exercises/          # Module 2: Gate Fidelity Analysis
+│   ├── module2_test_gate_fidelity.ipynb    # Fidelity metrics and computation methods
+│   └── module2_test_gate_optimization.ipynb # Basic optimization techniques
 │
-└── Data & Resources
-    ├── save_data/                       # Saved optimization data and results
-    │   ├── XGate/                       # X-gate optimization results
-    │   ├── ZGate_Optimization/          # Z-gate optimization results
-    │   ├── CZGate_ARP/                  # CZ-gate ARP optimization results
-    │   └── optimization_results/        # Other optimization data
-    ├── images/                          # Figures, diagrams, and screenshots
-    └── lecture_notes/                   # Course materials and references
+├── module2_XGATE_exercises/             # Module 2: X-Gate (Single-Qubit π Rotation)
+│   ├── Default_SQCONFIG_for_X_GATE.py      # Configuration file for X-gate parameters
+│   ├── module2_X_gates_realization.ipynb   # X-gate with Gaussian pulses
+│   ├── module2_X_gates_optimization.ipynb  # Optimize pulse width σ
+│   └── save_data/                          # X-gate optimization results
+│       └── XGate/
+│
+├── module2_ZGATE_exercises/             # Module 2: Z-Gate (Single-Qubit Phase Gate)
+│   ├── Default_SQCONFIG_for_Z_GATE.py      # Configuration file for Z-gate parameters
+│   ├── module2_Z_gate_realization.ipynb    # Z-gate with detuning pulses
+│   ├── module2_Z_gate_optimization.ipynb   # Optimize gate time and detuning
+│   └── save_data/                          # Z-gate optimization results
+│       └── ZGate_Optimization/
+│
+├── module2_CZGATE_ARP_exercises/        # Module 2: CZ-Gate (Two-Qubit Controlled Phase)
+│   ├── Default_TQCONFIG_for_CZ_GATE.py     # Configuration file for CZ-gate parameters
+│   ├── module2_CZ_gate_ARP_realization.ipynb  # CZ gate with ARP protocol
+│   ├── module2_CZ_gate_ARP_optimization.ipynb # Interactive parameter optimization
+│   ├── module2_CZ_gate_realization_time_optimal_pulse.ipynb  # Time-optimal pulses
+│   ├── module2_CZ_gate_fidelity_optimization_multi_process.py  # Parallel optimization script
+│   ├── module2_CZ_gate_fidelity_optimization_multi_process_plotting.ipynb  # Results analysis
+│   └── save_data/                          # CZ-gate optimization results
+│       ├── CZGate_ARP/                     # ARP protocol results
+│       └── optimization_results/           # Multi-parameter optimization data
+│
+├── images/                              # Figures, diagrams, and plots
+└── lecture_notes/                       # Course materials and references
 ```
+
+### Organization Philosophy
+
+**Modular by Exercise Type:**
+- Each gate type (X, Z, CZ) has its own self-contained folder
+- Each folder includes:
+  - Configuration files (`Default_*CONFIG_*.py`)
+  - Implementation notebooks (realization + optimization)
+  - Local `save_data/` directory for results
+  
+**Benefits:**
+- **Easy navigation**: All files for a specific gate are together
+- **Self-contained**: Each module can be moved or shared independently
+- **Clear structure**: Beginners can easily understand the project layout
+- **Path management**: Local save directories avoid cross-module dependencies
 
 ## Key Features
 

@@ -6,14 +6,14 @@ import sys
 from pathlib import Path
 
 # Add parent directory to path so we can import myPkg
-# try:
-#     parent_dir = Path(__file__).resolve().parent.parent
-# except NameError:
-#     # When __file__ is not available (e.g., in interactive mode)
-#     parent_dir = Path.cwd()
+try:
+    parent_dir = Path(__file__).resolve().parent.parent
+except NameError:
+    # When __file__ is not available (e.g., in interactive mode)
+    parent_dir = Path.cwd()
     
-# if str(parent_dir) not in sys.path:
-#     sys.path.insert(0, str(parent_dir))
+if str(parent_dir) not in sys.path:
+    sys.path.insert(0, str(parent_dir))
     
 import numpy as np
 from common_imports import *
@@ -27,12 +27,10 @@ time_unit = 1  # [μs]
 # ============================================================================
 # Time Optimal Pulse Parameters
 # ============================================================================
+# parameters for the ARP pulse
 T_gate = 0.48  # [us] 
 tau_e = 0.001825  # [us] we can chose it as a time unit
 amp_Omega_r = 2 * np.pi * 7.26  # [MHz]
-Delta_0= 2 * np.pi * 0.074  # [MHz]
-amp_a = 1.46  # [MHz]
-freq = 7.06  # [MHz]
 tau = 0.103  # [us]
 
 Omega_r_pulse_args = dict(
@@ -42,10 +40,10 @@ Omega_r_pulse_args = dict(
 )  # [MHz, us, us]
 
 Delta_r_pulse_args = dict(
-  Delta_0= Delta_0, 
-  amp = amp_a,
+  amp_Delta_0= 2 * np.pi * 0.074, 
+  amp_A = 1.46,
   T_gate = T_gate,
-  freq = freq,
+  freq = 7.06,
   tau = tau,
 )  # [MHz, us, us]
 
@@ -53,7 +51,7 @@ Delta_r_pulse_args = dict(
 # Time List Parameters
 # ============================================================================
 num_tpoints = 300 + 1
-scale_tlist = np.linspace(0, 1, num_tpoints) * time_unit  # [us]
+scale_tlist = np.linspace(0, 1, num_tpoints)  # [us]
 tlist = scale_tlist * T_gate  # [us]
 
 # ============================================================================
@@ -62,22 +60,22 @@ tlist = scale_tlist * T_gate  # [us]
 atom0_ham_params = dict(
   Omega_01= 0, 
   delta_1= 0, 
-  Omega_r= (APR_pulse_Omega_r, Omega_r_pulse_args),  # Tuple: (function, args)
-  Delta_r= (APR_pulse_Delta_r, Delta_r_pulse_args) # Tuple: (function, args)
+  Omega_r= (time_optimal_pulse_Omega_r, Omega_r_pulse_args),  # Tuple: (function, args)
+  Delta_r= (time_optimal_pulse_Delta_r, Delta_r_pulse_args) # Tuple: (function, args)
 )
 
 atom1_ham_params = dict(
   Omega_01 = 0, 
   delta_1 = 0, 
-  Omega_r = (APR_pulse_Omega_r, Omega_r_pulse_args), # Tuple: (function, args)
-  Delta_r = (APR_pulse_Delta_r, Delta_r_pulse_args) # Tuple: (function, args)
+  Omega_r = (time_optimal_pulse_Omega_r, Omega_r_pulse_args), # Tuple: (function, args)
+  Delta_r = (time_optimal_pulse_Delta_r, Delta_r_pulse_args) # Tuple: (function, args)
 )
 
 # ============================================================================
 # Lindblad Parameters
 # ============================================================================
 lindblad_params = dict(
-  gamma_r = 1 / 540, 
+  gamma_r = 1/252,  # [1/us] Rydberg state lifetime ~ 252 us
   b_0r = 1/16, 
   b_1r = 1/16, 
   b_dr = 7/8
@@ -86,7 +84,7 @@ lindblad_params = dict(
 # ============================================================================
 # Coupling Parameters
 # ============================================================================
-Rydberg_B = 2 * np.pi * 200 # [MHz]
+Rydberg_B = 2 * np.pi * 3.8 # [MHz] low interaction strength for time-optimal pulse
 
 # ============================================================================
 # Basis States

@@ -90,10 +90,30 @@ def time_optimal_pulse_Omega_r(t, amp_Omega_r, T_gate, tau_e):
     param_b = np.exp(-(T_gate - 20 * tau_e - t)/tau_e)
     return amp_Omega_r * (1 / (1 + param_a) + 1 / (1 + param_b) - 1)
 
-def time_optimal_pulse_Delta_r(t, Delta_0, amp, T_gate, freq, tau, ):
+
+def time_optimal_pulse_phase_profile(t, amp_Delta_0, amp_A, T_gate, freq, tau):
     if t < 0 or t > T_gate:
         return 0
     
     t0 = T_gate / 2
     param_c = np.exp(-((t - t0)/tau)**4)
-    return Delta_0 * t + amp * np.sin(2 * np.pi * freq * (t - t0)) * param_c
+    return amp_Delta_0 * t + amp_A * np.sin(2 * np.pi * freq * (t - t0)) * param_c
+
+
+def time_optimal_pulse_Delta_r(t, amp_Delta_0, amp_A, T_gate, freq, tau):
+    if t < 0 or t > T_gate:
+        return 0
+    
+    t0 = T_gate / 2
+    x = t - t0
+    exp_term = np.exp(-(x / tau) ** 4)
+    sin_term = np.sin(2 * np.pi * freq * x)
+    cos_term = np.cos(2 * np.pi * freq * x)
+
+    # Derivative of the exponential term
+    d_exp_term = -4 * (x ** 3) / (tau ** 4) * exp_term
+
+    # d/dt [sin * exp] = cos * exp * d(sin)/dt + sin * d(exp)/dt
+    d_sin_exp = 2 * np.pi * freq * cos_term * exp_term + sin_term * d_exp_term
+
+    return amp_Delta_0 + amp_A * d_sin_exp

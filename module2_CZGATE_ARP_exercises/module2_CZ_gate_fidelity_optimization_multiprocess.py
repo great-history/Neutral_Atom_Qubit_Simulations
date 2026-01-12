@@ -461,22 +461,22 @@ if __name__ == '__main__':
     # For full scan, use:
     # scale_B_list = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 
     #                 1250, 1500, 1750, 2000, 2500, 3000]
-    scale_B_list = [1000, 1250, 1500, 1750, 2000, 2500, 3000]
+    scale_B_list = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1250, 1500, 1750, 2000, 2500, 3000]
     # scale_B_list = [100]
     
     # Parameter bounds
     bounds = {
-        'T_gate': (0.15, 1.5),
+        'T_gate': (0.54, 0.54),
         'tau_ratio': (0.175, 0.175), # Fixed tau_ratio for ARP ( why? )
-        'amp_Omega_r': (5*2*np.pi, 20*2*np.pi),
-        'amp_Delta_r': (10*2*np.pi, 35*2*np.pi)
+        'amp_Omega_r': (10*2*np.pi, 30*2*np.pi),
+        'amp_Delta_r': (10*2*np.pi, 30*2*np.pi)
     }
 
     initial_params = {
-        'T_gate': 0.9,
+        'T_gate': 0.54,
         'tau_ratio': 0.175,
-        'amp_Omega_r': 90,
-        'amp_Delta_r': 150
+        'amp_Omega_r': 17 * 2 * np.pi,
+        'amp_Delta_r': 23 * 2 * np.pi
     }
     initial_params_list = [initial_params]
 

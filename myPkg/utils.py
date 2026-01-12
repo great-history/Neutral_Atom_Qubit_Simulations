@@ -24,7 +24,10 @@ def create_save_directory(task_name, base_dir='save_data', subdir='optimization_
     """
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     folder_name = f"{timestamp}_{task_name}"
-    save_dir = Path(base_dir) / subdir / folder_name
+    if subdir is None or subdir == '':
+        save_dir = Path(base_dir) / folder_name
+    else:
+        save_dir = Path(base_dir) / subdir / folder_name
     save_dir.mkdir(parents=True, exist_ok=True)
     print(f"💾 Save directory created: {save_dir}")
     return save_dir

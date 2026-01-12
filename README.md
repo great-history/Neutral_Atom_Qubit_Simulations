@@ -40,19 +40,29 @@ Neutral_Atom_Qubit_Simulations/
 │   └── save_data/                          # Z-gate optimization results
 │       └── ZGate_Optimization/
 │
-├── module2_CZGATE_ARP_exercises/        # Module 2: CZ-Gate (Two-Qubit Controlled Phase)
+├── module2_CZGATE_ARP_exercises/        # Module 2: CZ-Gate (Two-Qubit Controlled Phase, ARP)
 │   ├── Default_TQCONFIG_for_CZ_GATE.py     # Configuration file for CZ-gate parameters
 │   ├── module2_CZ_gate_ARP_realization.ipynb  # CZ gate with ARP protocol
 │   ├── module2_CZ_gate_ARP_optimization.ipynb # Interactive parameter optimization
-│   ├── module2_CZ_gate_realization_time_optimal_pulse.ipynb  # Time-optimal pulses
-│   ├── module2_CZ_gate_fidelity_optimization_multi_process.py  # Parallel optimization script
-│   ├── module2_CZ_gate_fidelity_optimization_multi_process_plotting.ipynb  # Results analysis
-│   └── save_data/                          # CZ-gate optimization results
-│       ├── CZGate_ARP/                     # ARP protocol results
-│       └── optimization_results/           # Multi-parameter optimization data
+│   ├── module2_CZ_gate_fidelity_optimization_multiprocess.py  # Parallel optimization script
+│   ├── module2_CZ_gate_fidelity_optimization_multiprocess_plotting.ipynb  # Results analysis
+│   ├── images/                             # Plots and figures for CZ gate
+│   └── save_data/                          # CZ-gate optimization results (various B values)
 │
-├── images/                              # Figures, diagrams, and plots
-└── lecture_notes/                       # Course materials and references
+├── module2_CZGATE_TO_exercises/         # Module 2: CZ-Gate (Time-Optimal)
+│   ├── Default_TQCONFIG_for_CZ_GATE_TO.py  # Configuration for time-optimal CZ gate
+│   └── module2_CZ_gate_realization_time_optimal_pulse.ipynb  # Time-optimal pulses
+│
+├── save_data/                           # General optimization results and data
+│   ├── 20260108_XXXXXX_CZ_gate_ARP_RydbergB/  # Timestamped CZ gate runs
+│   ├── CZGate_ARP/                         # ARP protocol results
+│   ├── optimization_results/               # Multi-parameter optimization data
+│   └── XGate/                              # X-gate results
+│
+├── lecture_notes/                       # Course materials and references
+├── show_version.ipynb                   # Python and package version information
+├── README.md                            # This file
+└── .gitignore
 ```
 
 ## Key Features
@@ -88,87 +98,29 @@ Neutral_Atom_Qubit_Simulations/
 ## Installation
 
 ### Requirements
-- Python 3.8+
-- QuTiP (Quantum Toolbox in Python)
-- NumPy, SciPy, Pandas
-- Matplotlib
-- Joblib (for parallel processing)
+
+This project has been tested with the following environment:
+
+- **Python**: 3.13.7
+- **numpy**: 2.3.3
+- **matplotlib**: 3.10.7
+- **scipy**: 1.16.2
+- **pandas**: 2.3.2
+- **qutip**: 5.2.1
+
+You can check your current versions by running [show_version.ipynb](show_version.ipynb).
 
 ### Setup
 ```bash
-# Install dependencies
-pip install qutip numpy scipy pandas matplotlib joblib
+# Install dependencies with specific versions
+pip install qutip==5.2.1 numpy==2.3.3 scipy==1.16.2 pandas==2.3.2 matplotlib==3.10.7
+
+# Or install the latest compatible versions
+pip install qutip numpy scipy pandas matplotlib
 
 # Clone or download this repository
-cd simulation_codes
+cd Neutral_Atom_Qubit_Simulations
 ```
-
-### Units Convention
-- **Time**: microseconds (μs)
-- **Frequency**: MHz for display, rad/μs (angular frequency) for computation
-- **Conversion**: $f$ (MHz) = $\omega$ (rad/μs) / (2π)
-
-## Module Descriptions
-
-### Module 1: Fundamentals
-- **Single atom dynamics**: Four-level system Hamiltonian evolution and population dynamics
-- **Two-atom coupling**: Rydberg blockade interactions and entanglement generation
-
-### Module 2: Quantum Gate Implementation
-
-#### Exercise 1: X-Gate (Single-Qubit π Rotation)
-**Implementation Method:**
-- Gaussian pulse: $\Omega_{01}(t) = \Omega_0 \exp[-(t-t_0)^2/(2\sigma^2)]$
-- Direct drive on computational basis $|0\rangle \leftrightarrow |1\rangle$
-- Set $\Omega_r = 0, \Delta_r = 0$ (no Rydberg coupling)
-
-**Key Tasks:**
-1. Scan Rabi frequency $\Omega_0$ and pulse width $\sigma$
-2. Optimize $\sigma$ for fixed $\Omega_0$ to achieve π-pulse
-3. Verify analytic formula: $\sigma \cdot \Omega_0 = \sqrt{\pi/2}$
-4. Visualize Bloch sphere evolution
-
-**Expected Results:**
-- Minimal leakage to $|r\rangle$ and $|d\rangle$ states ($< 10^{-12}$)
-- High fidelity ($> 0.999$) with optimized parameters
-- Clean population transfer $|0\rangle \leftrightarrow |1\rangle$
-
-#### Exercise 2: Z-Gate (Single-Qubit Phase Gate)
-**Implementation Method:**
-- Window (square) pulse on detuning: $\delta_1(t)$ during $0 < t < T$
-- Pure phase accumulation, no population transfer
-- Set $\Omega_{01} = 0, \Omega_r = 0, \Delta_r = 0$
-
-**Key Tasks:**
-1. Scan detuning amplitude $\delta_1$ and gate time $T$
-2. Optimize to achieve phase $\phi = \int_0^T \delta_1(t) dt = \pi$
-3. Plot fidelity vs parameters
-4. Visualize state trajectory on Bloch sphere (rotation around Z-axis)
-
-**Expected Results:**
-- No leakage to auxiliary states
-- Constraint: $\delta_1 \times T = \pi$ for optimal Z-gate
-- Near-perfect fidelity ($F \approx 1$) at optimal parameters
-
-#### Exercise 3: CZ-Gate (Two-Qubit Controlled Phase)
-**Implementation Method:**
-- Adiabatic Rapid Passage (ARP) protocol (Ref. [2])
-- Time-dependent Rabi drive: $\Omega_{1r}(t) = \Omega_{1r}[e^{-(t-t_0)^4/\tau^4} - a]/(1-a)$
-- Time-dependent detuning: $\Delta_r(t) = -\Delta_r \cos(2\pi t/T)$
-- Rydberg blockade strength: $B/2\pi = 50-3000$ MHz
-
-**Key Tasks:**
-1. Reproduce Ref. [2] Fig. 2 with initial parameters
-2. Analyze population dynamics for $|1,0\rangle$ and $|1,1\rangle$ initial states
-3. Scan Rydberg lifetime $\gamma_r$ and measure fidelity dependence
-4. Optimize parameters for various blockade strengths $B$
-5. Compare three parameter sets (slow/reference/fast gates)
-
-**Key Observations:**
-- **Significant Rydberg population**: Unlike X/Z gates, CZ requires transient $|r\rangle$ population ($\sim 10^{-4}$)
-- **Leakage to decay state**: $|d\rangle$ population $\sim 10^{-3}$ due to spontaneous emission
-- **Lifetime sensitivity**: Fidelity strongly depends on $\gamma_r$ (saturates below $1/540$ μs⁻¹)
-- **Blockade scaling**: Requires $B \gtrsim 200$ MHz for near-optimal fidelity
 
 ## Contact
 

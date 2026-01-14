@@ -129,7 +129,7 @@ comp_indices = [0, 1, 4, 5]  # indices of computational basis in full Hilbert sp
 # psi0_list = make_initial_list_for_gate_fidelity(num_qubits = 2, dim_atom = 4)
 # qs0_list = make_initial_list_for_gate_fidelity(num_qubits = 2, dim_atom = 2)
 
-target_gate = np.diag([1, -1, -1, -1])  # CZ gate in the two-qubit computational basis
+target_gate = np.diag([1, 1, 1, -1])  # CZ gate in the two-qubit computational basis
 target_gate = Qobj(target_gate, dims=[[2, 2], [2, 2]])  # target gate in the two-qubit qubit subspace
 
 # ============================================================================

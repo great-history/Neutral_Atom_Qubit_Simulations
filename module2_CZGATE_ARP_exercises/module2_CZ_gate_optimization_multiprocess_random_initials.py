@@ -449,39 +449,22 @@ if __name__ == '__main__':
     # ========== Task Configuration ==========
     # Set a descriptive task name for this optimization run
     # This will be used to create a unique results folder
-    task_name = 'CZ_gate_ARP_RydbergB'  # Modify this for different runs
-    
-    # Examples:
-    # task_name = 'CZ_gate_quick_test'
-    # task_name = 'CZ_gate_high_B_range'
-    # task_name = 'CZ_gate_fine_sweep'
+    task_name = 'CZ_gate_ARP_RydbergB_T1.08us_random_initials'  # Modify this for different runs
     
     # ========== Optimization Parameters ==========
     # Rydberg blockade strengths to optimize [MHz]
-    # For full scan, use:
-    # scale_B_list = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 
-    #                 1250, 1500, 1750, 2000, 2500, 3000]
-    scale_B_list = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1250, 1500, 1750, 2000, 2500, 3000]
-    # scale_B_list = [100]
+    scale_B_list =  [400, 500, 600, 700, 800, 900, 1000]
     
     # Parameter bounds
     bounds = {
-        'T_gate': (0.54, 0.54),
+        'T_gate': (1.08, 1.08), # 0.27 / 0.54 / 1.08 μs options
         'tau_ratio': (0.175, 0.175), # Fixed tau_ratio for ARP ( why? )
-        'amp_Omega_r': (10*2*np.pi, 30*2*np.pi),
-        'amp_Delta_r': (10*2*np.pi, 30*2*np.pi)
+        'amp_Omega_r': (5*2*np.pi, 9*2*np.pi), # 15 / 10 / 5
+        'amp_Delta_r': (7*2*np.pi, 12*2*np.pi)  # 50 / 30 / 15
     }
-
-    initial_params = {
-        'T_gate': 0.54,
-        'tau_ratio': 0.175,
-        'amp_Omega_r': 17 * 2 * np.pi,
-        'amp_Delta_r': 23 * 2 * np.pi
-    }
-    initial_params_list = [initial_params]
 
     # Generate several well-separated initial parameter sets
-    # initial_params_list = generate_random_initial_params(bounds, n_samples=15, min_distance=0.3)
+    initial_params_list = generate_random_initial_params(bounds, n_samples=3, min_distance=0.3)
     # print(initial_params_list)
     
     try:
@@ -495,3 +478,7 @@ if __name__ == '__main__':
         import traceback
         traceback.print_exc()
         sys.exit(1)
+
+
+# Note: For Windows users, it is recommended to run this script directly via Python interpreter
+# rather than in a Jupyter notebook, due to potential issues with multiprocessing.

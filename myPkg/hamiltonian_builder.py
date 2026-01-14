@@ -3,13 +3,14 @@ import numpy as np
 from myPkg.pulse_functions import *
 import warnings
 
-"""
-  Constructs the Hamiltonian for a single-atom system ( time-independent ).
 
-  Returns:
-  - Qobj: The total Hamiltonian operator for the single-atom system.
-"""
 def construct_single_atom_hamiltonian(ham_params, lindblad_params):
+  """
+    Constructs the Hamiltonian for a single-atom system ( time-independent ).
+
+    Returns:
+    - Qobj: The total Hamiltonian operator for the single-atom system.
+  """
   # Basis states for a single atom
   state0 = basis(4, 0)
   state1 = basis(4, 1)
@@ -33,17 +34,18 @@ def construct_single_atom_hamiltonian(ham_params, lindblad_params):
 
   return H0, collapse_list
 
-"""
-  Constructs the Hamiltonian for a two-atom system with Rydberg blockade interaction. ( time-independent )
 
-  This function builds the total Hamiltonian by combining individual Hamiltonians for each atom
-  and adding a coupling term representing the Rydberg blockade effect between the two atoms.
-  The system uses a 4-level basis per atom: |0>, |1>, |r> (Rydberg), |d> (other states).
-
-  Returns:
-  - Qobj: The total Hamiltonian operator for the two-atom system.
-"""
 def construct_two_atom_hamiltonian(atom0_ham_params, atom1_ham_params, lindblad_params, Rydberg_B):
+  """
+    Constructs the Hamiltonian for a two-atom system with Rydberg blockade interaction. ( time-independent )
+
+    This function builds the total Hamiltonian by combining individual Hamiltonians for each atom
+    and adding a coupling term representing the Rydberg blockade effect between the two atoms.
+    The system uses a 4-level basis per atom: |0>, |1>, |r> (Rydberg), |d> (other states).
+
+    Returns:
+    - Qobj: The total Hamiltonian operator for the two-atom system.
+  """
   # Basis states for a single atom
   state0 = basis(4, 0)
   state1 = basis(4, 1)
@@ -80,13 +82,13 @@ def construct_two_atom_hamiltonian(atom0_ham_params, atom1_ham_params, lindblad_
   return H0 + H1 + H_coupling, collapse_list
 
 
-"""
-  Constructs the Hamiltonian for a single-atom system ( time-dependent ).
-
-  Returns:
-  - Qobj: The total Hamiltonian operator for the single-atom system.
-"""
 def get_param(param_dict, key):
+  """
+    Constructs the Hamiltonian for a single-atom system ( time-dependent ).
+
+    Returns:
+    - Qobj: The total Hamiltonian operator for the single-atom system.
+  """
   val = param_dict[key]
   if isinstance(val, tuple) and len(val) == 2:
       func, my_args = val
@@ -96,17 +98,18 @@ def get_param(param_dict, key):
   else:
     warnings.warn(f"Unexpected value type for key '{key}': {type(val)}. Stopping execution.", UserWarning)
 
-"""
-  Constructs the time-dependent Hamiltonian for a single-atom system.
 
-  Parameters:
-  - ham_params: dict with Hamiltonian parameters (constants or (func, args) tuples)
-  - lindblad_params: dict with Lindblad parameters
-
-  Returns:
-  - tuple: (H0, collapse_list) where H0 is the Hamiltonian, collapse_list is the list of collapse operators
-"""
 def construct_TD_SAHam(ham_params: dict, lindblad_params: dict):
+  """
+    Constructs the time-dependent Hamiltonian for a single-atom system.
+
+    Parameters:
+    - ham_params: dict with Hamiltonian parameters (constants or (func, args) tuples)
+    - lindblad_params: dict with Lindblad parameters
+
+    Returns:
+    - tuple: (H0, collapse_list) where H0 is the Hamiltonian, collapse_list is the list of collapse operators
+  """
   # Basis states for a single atom
   state0 = basis(4, 0)
   state1 = basis(4, 1)
@@ -133,6 +136,19 @@ def construct_TD_SAHam(ham_params: dict, lindblad_params: dict):
 
 def construct_TD_TAHam(atom0_ham_params, atom1_ham_params, \
                        atom0_lindblad_params, atom1_lindblad_params, Rydberg_B):
+  """
+    Constructs the time-dependent Hamiltonian for a two-atom system.
+
+    Parameters:
+    - atom0_ham_params: dict with Hamiltonian parameters for atom 0 (constants or (func, args) tuples)
+    - atom1_ham_params: dict with Hamiltonian parameters for atom 1 (constants or (func, args) tuples)
+    - atom0_lindblad_params: dict with Lindblad parameters for atom 0
+    - atom1_lindblad_params: dict with Lindblad parameters for atom 1
+    - Rydberg_B: float, coupling strength between the two atoms
+
+    Returns:
+    - tuple: (H0, collapse_list) where H0 is the Hamiltonian, collapse_list is the list of collapse operators
+  """
   # Basis states for a single atom
   state0 = basis(4, 0)
   state1 = basis(4, 1)
